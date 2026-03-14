@@ -92,7 +92,7 @@ bool Socket::bind(const std::string &port)
             continue;
         }    
     
-        if (::setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, NULL, NULL) == -1) {
+        if (::setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0) == -1) {
             std::perror("setsockopt error");
             return false;
         }
@@ -170,8 +170,7 @@ std::optional<std::string> Socket::recv()
             return std::nullopt;
         }
         else if (received == 0) {
-            std::cerr << "The connection was closed by client " << _socket_fd << std::endl;
-            Socket::shutdown();
+            std::cerr << "Connection closed by client " << _socket_fd << std::endl;
             return std::nullopt;
         }
         total_received += received;
@@ -180,9 +179,9 @@ std::optional<std::string> Socket::recv()
 }
 
 void Socket::close()
-{
-    Socket::shutdown();
-    if (isActive()) {        
+{    
+    if (isActive()) {     
+        Socket::shutdown();   
         ::close(_socket_fd);
         _socket_fd = -1;
     }
@@ -194,10 +193,6 @@ void Socket::close()
 
 void Socket::shutdown()
 {
-    if (!isActive()) {
-        std::perror("Trying to shutdown empty fd");
-        return;
-    }
     if (::shutdown(_socket_fd, SHUT_RDWR) == -1) {
         std::perror("socket shutdown error");
         return;

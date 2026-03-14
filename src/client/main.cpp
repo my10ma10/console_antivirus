@@ -2,6 +2,7 @@
 #include <iostream>
 
 
+// ./client port filepath
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         std::cerr << "Too few arguments to program\n";
@@ -11,15 +12,22 @@ int main(int argc, char *argv[]) {
     fs::path checking_file(argv[1]);
     std::string port_str = argv[2];
     
-    Client client(port_str, "127.0.0.1");
+    try {
+        Client client;
+        client.connect(port_str, "127.0.0.1");
 
-    client.sendFile(checking_file);
-    if (client.isVerified()) {
-        std::cout << "Файл прошёл проверку\n";
+        client.sendFile(checking_file);
+        if (client.isVerified()) {
+            std::cout << "Файл прошёл проверку\n";
+        }
+        else {
+            std::cout << "Файл не прошёл проверку и является вредоносным\n";
+        }
+        return 0;
     }
-    else {
-        std::cout << "Файл не прошёл проверку и является вредоносным\n";
+    catch (const std::runtime_error& err) {
+        std::cout << "runtime error: " << err.what() << std::endl;
+        return 1;
     }
-    return 0;
 } 
 

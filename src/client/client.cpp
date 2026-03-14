@@ -1,14 +1,8 @@
 #include "client.hpp"
 
-Client::Client(const std::string &port, const std::string &ip_address)
-    : _port(port)
-    , _ip_address(ip_address)
+void Client::connect(const std::string &port, const std::string &ip_address)
 {
-}
-
-void Client::start()
-{
-    if (!_socket.connect(_port, _ip_address)) {
+    if (!_socket.connect(port, ip_address)) {
         throw std::runtime_error("Client connection error");
     }
 }
@@ -41,14 +35,15 @@ bool Client::isVerified()
 
 std::optional<std::ifstream> Client::readFile(const fs::path &filepath)
 {
+    std::cout << filepath << std::endl;
     if (!fs::exists(filepath)) {
-        std::cerr << "File not found\n";
+        std::cerr << "Client: File not found\n";
         return std::nullopt;
     }
 
     std::ifstream file(filepath);
     if (!file.is_open()) {
-        std::cerr << "Cannot open file\n";
+        std::cerr << "Client: Cannot open file\n";
         return std::nullopt;
     }
 

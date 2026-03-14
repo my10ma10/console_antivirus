@@ -10,15 +10,12 @@
 class Client {
     Socket _socket;
 
-    std::string _port;
-    std::string _ip_address;
-
     // std::atomic<bool> _is_active{true};
     
 public:
-    Client(const std::string &port, const std::string &ip_address);
+    Client() = default;
 
-    void start();
+    void connect(const std::string &port, const std::string &ip_address);
     // void stop();
 
     void sendFile(const fs::path &filepath);
