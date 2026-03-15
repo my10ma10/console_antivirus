@@ -16,8 +16,9 @@ public:
     
     void connect(const std::string &port);
 
-    void serveClient();
+    void handleClient();
 
 private: 
     void initJson();
+    void report(Socket &client_socket);
 };

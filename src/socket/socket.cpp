@@ -210,6 +210,12 @@ void Socket::shutdownWrite()
     }
 }
 
+void Socket::detach()
+{
+    _socket_fd = -1;
+    _addr_info = nullptr;
+}
+
 bool Socket::isActive() const
 {
     return _socket_fd >= 0;

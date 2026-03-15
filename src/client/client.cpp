@@ -32,7 +32,7 @@ bool Client::isVerified()
         return false;
     }
     if (verif_res.value() != "0" && verif_res.value() != "1") {
-        std::cerr << "verif_res: " <<  verif_res.value() << std::endl;
+        std::cerr << "verif_res: '" <<  verif_res.value() << "'\n";
         throw std::runtime_error("Unexpected verifying result");
     }
 

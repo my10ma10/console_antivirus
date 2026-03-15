@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         client.connect(port_str, "127.0.0.1");
 
         client.sendFile(checking_file);
-        usleep(100);
+        
         if (client.isVerified()) {
             std::cout << "Файл прошёл проверку\n";
         }

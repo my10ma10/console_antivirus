@@ -41,6 +41,7 @@ public:
     void close();
     void shutdown();
     void shutdownWrite();
+    void detach();
 
     bool isActive() const;
 
