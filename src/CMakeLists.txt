@@ -9,3 +9,4 @@ target_include_directories(socket_lib PUBLIC
 
 add_subdirectory(server)
 add_subdirectory(client)
+add_subdirectory(stats_util)
