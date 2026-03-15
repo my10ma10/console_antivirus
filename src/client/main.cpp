@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-// ./client port filepath
+// ./client filepath port
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         std::cerr << "Too few arguments to program\n";
@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
         client.connect(port_str, "127.0.0.1");
 
         client.sendFile(checking_file);
+        usleep(100);
         if (client.isVerified()) {
             std::cout << "Файл прошёл проверку\n";
         }

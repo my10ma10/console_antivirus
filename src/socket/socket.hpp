@@ -40,6 +40,7 @@ public:
 
     void close();
     void shutdown();
+    void shutdownWrite();
 
     bool isActive() const;
 

@@ -92,7 +92,8 @@ bool Socket::bind(const std::string &port)
             continue;
         }    
     
-        if (::setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0) == -1) {
+        int opt = 1;
+        if (::setsockopt(_socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1) {
             std::perror("setsockopt error");
             return false;
         }
@@ -144,7 +145,7 @@ std::optional<ssize_t> Socket::send(const void *data, const std::size_t size) co
     while (total_sent < size) {
         ssize_t sent = ::send(_socket_fd, buffer + total_sent, size - total_sent, 0);
         if (sent == -1) {
-            std::perror("setsockopt error");
+            std::perror("send error");
             return std::nullopt;
         }
 
@@ -170,8 +171,7 @@ std::optional<std::string> Socket::recv()
             return std::nullopt;
         }
         else if (received == 0) {
-            std::cerr << "Connection closed by client " << _socket_fd << std::endl;
-            return std::nullopt;
+            break;
         }
         total_received += received;
     }
@@ -194,8 +194,19 @@ void Socket::close()
 void Socket::shutdown()
 {
     if (::shutdown(_socket_fd, SHUT_RDWR) == -1) {
-        std::perror("socket shutdown error");
-        return;
+
+        if (errno != ENOTCONN) {
+            std::perror("socket shutdown error");
+        }
+    }
+}
+
+void Socket::shutdownWrite()
+{
+    if (::shutdown(_socket_fd, SHUT_WR) == -1) {
+        if (errno != ENOTCONN) {
+            std::perror("socket shutdown _write error");
+        }
     }
 }
 
@@ -206,6 +217,6 @@ bool Socket::isActive() const
 
 bool Socket::createSocket(struct addrinfo *p) 
 {
-    return ((_socket_fd = ::socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1);
+    return ((_socket_fd = ::socket(p->ai_family, p->ai_socktype, p->ai_protocol)) != -1);
 }
 

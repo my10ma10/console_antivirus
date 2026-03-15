@@ -20,22 +20,27 @@ void Client::sendFile(const fs::path &filepath)
     }
 
     file_stream.value().close();
+
+    _socket.shutdownWrite();
 }
 
 bool Client::isVerified()
 {
     auto verif_res = _socket.recv();
     if (!verif_res.has_value()) {
-        std::cerr << "Getting verification resutl error\n";
+        std::cerr << "Getting verification result error\n";
         return false;
     }
+    if (verif_res.value() != "0" && verif_res.value() != "1") {
+        std::cerr << "verif_res: " <<  verif_res.value() << std::endl;
+        throw std::runtime_error("Unexpected verifying result");
+    }
 
-    return verif_res == "0";
+    return verif_res.value() == "1";
 }
 
 std::optional<std::ifstream> Client::readFile(const fs::path &filepath)
 {
-    std::cout << filepath << std::endl;
     if (!fs::exists(filepath)) {
         std::cerr << "Client: File not found\n";
         return std::nullopt;

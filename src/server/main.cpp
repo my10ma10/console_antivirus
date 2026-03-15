@@ -13,15 +13,18 @@ int main(int argc, char *argv[]) {
     try {
         Server server(config_file);
 
-        server.connect(port_str, "127.0.0.1");
-        // while (true) {
-        //     server.waitClient();
-        // }
+        server.connect(port_str);
+        while (true) {
+            server.serveClient();
+        }
         return 0;
 
     }
     catch (const std::runtime_error& err) {
         std::cout << "runtime error: " << err.what() << std::endl;
+    }
+    catch (const std::exception& err) {
+        std::cout << "Unrecognized error: " << err.what() << std::endl;
     }
 } 
 

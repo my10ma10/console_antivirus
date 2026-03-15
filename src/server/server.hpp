@@ -8,12 +8,16 @@
 class Server {
     Socket _socket;
 
-    FileInspector _inspector;
     json _stat_json;
+    FileInspector _inspector;
 public:
     Server();
     explicit Server(const fs::path &config_path);
     
-    void connect(const std::string &port, const std::string &ip_address);
-    
+    void connect(const std::string &port);
+
+    void serveClient();
+
+private: 
+    void initJson();
 };

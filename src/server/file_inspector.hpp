@@ -11,11 +11,13 @@ public:
     FileInspector(json &stat_json);
     FileInspector(json &stat_json, const fs::path &config_path);
 
-    void inspect(const fs::path &filepath);
+    bool inspect(const std::string &file_content);
 
 private:
-    std::string readFile(
-        const fs::path &filepath, 
-        std::ios_base::openmode openmode
-    );
+    void init();
+
+    // std::string readFile(
+    //     const fs::path &filepath, 
+    //     std::ios_base::openmode openmode
+    // );
 };
