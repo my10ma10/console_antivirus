@@ -7,21 +7,16 @@ void ConfigScanner::loadPatterns(const fs::path &config_path)
 {
     json data = parseFile(config_path);
 
-    try {
-        if (!data.contains("patterns") || !data["patterns"].is_array()) {
-            throw std::runtime_error("Patterns not found or is not an array");
+    if (!data.contains("patterns") || !data["patterns"].is_array()) {
+        throw std::runtime_error("Patterns not found or is not an array");
+    }
+    for (const auto& item : data["patterns"]) {
+        if (!item.is_string()) {
+            throw std::runtime_error("Patterns contain non-string values");
         }
-        for (const auto& item : data["patterns"]) {
-            if (!item.is_string()) {
-                throw std::runtime_error("Patterns contain non-string values");
-            }
-        }
+    }
 
-        _patterns = data["patterns"];
-    }
-    catch (const std::runtime_error& err) {
-        std::cerr << "Config Parser error: " << err.what() << std::endl;
-    }
+    _patterns = data["patterns"];
 }
 
 const std::vector<std::string> &ConfigScanner::getPatterns() const

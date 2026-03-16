@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
         std::cout << "Unrecognized error: " << err.what() << std::endl;
         return 1;
     }
+    catch (...) {
+        std::cout << "Unrecognized error\n";
+        return 1;
+    }
 } 
 
 void sigchldHandler(int);

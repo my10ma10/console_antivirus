@@ -7,6 +7,10 @@ target_link_libraries(config_scanner_lib PUBLIC
     nlohmann_json::nlohmann_json
 )
 
+target_include_directories(config_scanner_lib PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 
 add_library(file_inspector_lib STATIC
     file_inspector.cpp
