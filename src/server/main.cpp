@@ -2,7 +2,6 @@
 #include <iostream>
 #include <signal.h>
 #include <sys/wait.h>
-#include <atomic>
 
 
 void sigactionPreparing();
@@ -21,32 +20,26 @@ int main(int argc, char *argv[]) {
     sigactionPreparing();
     
     signal(SIGTERM, [](int) { 
-        g_running = false; 
-        std::exit(0);
+        g_running = false;
     });
     signal(SIGINT, [](int) { 
         g_running = false;
-        std::exit(0);
     });
 
     try {
         Server server(config_file);
 
         server.connect(port_str);
-        while (g_running) {
-            server.handleClient();
-            if (g_running == false) {
-                std::exit(0);
-            }
-        }
-        std::cout << "Waiting all children\n";
+        server.run(g_running);
         return 0;
     }
     catch (const std::runtime_error& err) {
         std::cout << "runtime error: " << err.what() << std::endl;
+        return 1;
     }
     catch (const std::exception& err) {
         std::cout << "Unrecognized error: " << err.what() << std::endl;
+        return 1;
     }
 } 
 

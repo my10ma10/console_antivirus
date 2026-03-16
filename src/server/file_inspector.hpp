@@ -3,18 +3,22 @@
 #include "config_scanner.hpp"
 
 #include <string>
+#include <vector>
+
+struct InspectResult {
+    bool verified;
+    std::vector<std::string> found_patterns;
+};
 
 class FileInspector {
     ConfigScanner _scanner;
-    json &_stat_json;
+
 public:
-    FileInspector(json &stat_json);
-    FileInspector(json &stat_json, const fs::path &config_path);
 
-    bool inspect(const std::string &file_content);
+    FileInspector() = default;
+    FileInspector(const fs::path &config_path);
 
-private:
-    void init();
+    InspectResult inspect(const std::string &file_content);
 
     // std::string readFile(
     //     const fs::path &filepath, 

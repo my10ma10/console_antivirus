@@ -1,9 +1,9 @@
 #include "socket.hpp"
 
-
 #include <stdexcept>
 #include <iostream>
 #include <vector>
+
 
 Socket::Socket(int fd) : _socket_fd(fd)
 {
@@ -205,7 +205,7 @@ void Socket::shutdownWrite()
 {
     if (::shutdown(_socket_fd, SHUT_WR) == -1) {
         if (errno != ENOTCONN) {
-            std::perror("socket shutdown _write error");
+            std::perror("socket shutdown write error");
         }
     }
 }
@@ -214,6 +214,11 @@ void Socket::detach()
 {
     _socket_fd = -1;
     _addr_info = nullptr;
+}
+
+struct pollfd Socket::pollfd(short events) const
+{
+    return {_socket_fd, events, 0};
 }
 
 bool Socket::isActive() const

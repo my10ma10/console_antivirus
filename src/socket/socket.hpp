@@ -6,9 +6,11 @@
 #include <cstring>
 
 #include <unistd.h>
+#include <poll.h>
 
 #include <optional>
 #include <string>
+
 
 #include "../defines.hpp"
 
@@ -42,6 +44,8 @@ public:
     void shutdown();
     void shutdownWrite();
     void detach();
+
+    struct pollfd pollfd(short events = 0) const;
 
     bool isActive() const;
 

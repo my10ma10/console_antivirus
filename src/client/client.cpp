@@ -29,6 +29,7 @@ bool Client::isVerified()
     auto verif_res = _socket.recv();
     if (!verif_res.has_value()) {
         std::cerr << "Getting verification result error\n";
+        throw std::runtime_error("Empty verifying result");
         return false;
     }
     if (verif_res.value() != "0" && verif_res.value() != "1") {

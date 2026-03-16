@@ -2,15 +2,16 @@
 #include <fcntl.h>
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 StatsUtil::StatsUtil()
 {
-    if (mkfifo(STATS_REQUEST_FIFO, 0644) == -1) {
-        std::perror("mkfifo error");
-        throw std::runtime_error("StatsUtil mkfifo error");
-    }
+    // if (mkfifo(STATS_REQUEST_FIFO, 0644) == -1) {
+    //     std::perror("mkfifo error");
+    //     throw std::runtime_error("StatsUtil mkfifo error");
+    // }
+    this->_response_fifo_fd = open(STATS_RESPONSE_FIFO, O_RDONLY | O_NONBLOCK);
     this->_request_fifo_fd = open(STATS_REQUEST_FIFO, O_WRONLY);
-    this->_response_fifo_fd = open(STATS_RESPONSE_FIFO, O_RDONLY);
 
     if (!isActive()) {
         perror("open error");
@@ -29,8 +30,11 @@ StatsUtil::StatsUtil(StatsUtil &&other)
         return;
     }
     if (this != &other) {
+        this->_response_fifo_fd = other._response_fifo_fd;
+        other._response_fifo_fd = -1;
+
         this->_request_fifo_fd = other._request_fifo_fd;
-        other._request_fifo_fd = -1;
+        other._request_fifo_fd = -1;     
     }
 }
 
@@ -40,8 +44,11 @@ StatsUtil &StatsUtil::operator=(StatsUtil &&other)
         if (isActive()) {
             StatsUtil::close();
         }
+        this->_response_fifo_fd = other._response_fifo_fd;
+        other._response_fifo_fd = -1;
+
         this->_request_fifo_fd = other._request_fifo_fd;
-        other._request_fifo_fd = -1;
+        other._request_fifo_fd = -1;        
     }
     return *this;
 }
@@ -57,15 +64,30 @@ void StatsUtil::writeRequest()
 
 std::string StatsUtil::readResponse()
 {
-    std::string str_stat;
-    str_stat.reserve(BUF_SIZE);
+    std::vector<char> stat_buf(BUF_SIZE);
     
-    if (read(_response_fifo_fd, str_stat.data(), BUF_SIZE) == -1) {
+    ssize_t read_n = read(_response_fifo_fd, stat_buf.data(), stat_buf.size());
+    if (read_n == -1) {
+        if (errno == EAGAIN) {
+            std::cerr << "No data yet\n";
+            return "";
+        }
         perror("read error");
         throw std::runtime_error("StatsUtil read error");        
     }
+
+
+    // std::cout << "stat_buf size: " << stat_buf.size() << std::endl;
+    // for (char& ch : stat_buf) {
+    //     std::cout << ch;
+    // }
+    // std::cout << std::endl;
+
+
+    std::string stat_str(stat_buf.data(), read_n);
+    auto resp = json::parse(stat_str);
     
-    return responsePreparing(json::parse(str_stat));
+    return responsePreparing(resp);
 }
 
 void StatsUtil::close()
@@ -73,7 +95,9 @@ void StatsUtil::close()
     if (isActive()) {
         ::close(_request_fifo_fd);
         _request_fifo_fd = -1;
-        unlink(STATS_REQUEST_FIFO);
+
+        ::close(_response_fifo_fd);
+        _response_fifo_fd = -1;
     }
 }
 
@@ -88,7 +112,7 @@ std::string StatsUtil::responsePreparing(json j)
 
     ss <<   
         "Stats: \n" << \
-        "Number of files checked: " << j["checked_files_count"] << \
+        "Number of files checked: " << GREEN_COLOR << j["checked_files_count"] << RESET_COLOR << \
         "\nNumber of malware patterns: " << RED_COLOR << j["pattern_stat"]["found_count"] << RESET_COLOR << \
         "\nPatterns: ";
     
