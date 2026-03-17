@@ -1,0 +1,8 @@
+{
+    "patterns" : [
+        "rm -rf",
+        "DROP TABLE",
+        "bad",
+        "1=1"
+    ]
+}

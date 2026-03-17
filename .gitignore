@@ -3,7 +3,6 @@
 # Prerequisites
 *.d
 build/
-config_files/
 
 # Compiled Object files
 *.slo
