@@ -137,14 +137,6 @@ void Server::report(Socket &client_socket)
     
     client_socket.send(result.verified ? "1" : "0");
 
-    sendStatsToParent(result);
-}
-
-void Server::sendStatsToParent(InspectResult &insp_res)
-{
-    json inspect_res_json;
-    inspect_res_json["verified"] = insp_res.verified;
-    inspect_res_json["found_patterns"] = insp_res.found_patterns;
 
     int to_parent_fd = open(STATS_CHILDREN_FIFO, O_WRONLY);
     if (to_parent_fd == -1) {
@@ -152,10 +144,19 @@ void Server::sendStatsToParent(InspectResult &insp_res)
         return;
     }
     
-    std::string res_str = inspect_res_json.dump();
-    write(to_parent_fd, res_str.c_str(), res_str.size());
+    sendStatsToParent(result, to_parent_fd);
 
     ::close(to_parent_fd);
+}
+
+void Server::sendStatsToParent(InspectResult &insp_res, int fifo_fd)
+{
+    json inspect_res_json;
+    inspect_res_json["verified"] = insp_res.verified;
+    inspect_res_json["found_patterns"] = insp_res.found_patterns;
+
+    std::string res_str = inspect_res_json.dump();
+    write(fifo_fd, res_str.c_str(), res_str.size());
 }
 
 void Server::readChildrenStat(int req_fifo_fd)
@@ -164,22 +165,17 @@ void Server::readChildrenStat(int req_fifo_fd)
 
     int read_n = read(req_fifo_fd, buf.data(), buf.capacity());
     if (read_n <= 0) {
+        std::perror("read children stat error");
         return;
     }
     
     auto insp_result = json::parse(buf.data(), nullptr, false);
-    
-    _stat_json["checked_files_count"] = _stat_json.value("checked_files_count", 0) + 1;
-    auto& patterns_types = _stat_json["pattern_stat"]["patterns_types"];
 
-    for (const auto &json_p : insp_result["found_patterns"]) {
-        std::string pattern = json_p;
-        patterns_types[pattern] = patterns_types.value(pattern, 0) + 1;
+    if (insp_result.is_discarded()) {
+        return;
     }
 
-    int insp_found = insp_result["found_patterns"].size();
-    _stat_json["pattern_stat"]["found_count"] =
-        _stat_json["pattern_stat"].value("found_count", 0) + insp_found;
+    updateStats(insp_result);
 }
 
 void Server::sendStatToUtil(int req_fifo_fd)
@@ -197,6 +193,21 @@ void Server::sendStatToUtil(int req_fifo_fd)
     write(resp_fifo_fd, stats_str.c_str(), stats_str.size());
 
     ::close(resp_fifo_fd);
+}
+
+void Server::updateStats(const json &inspect_stat)
+{
+    _stat_json["checked_files_count"] = _stat_json.value("checked_files_count", 0) + 1;
+    auto& patterns_types = _stat_json["pattern_stat"]["patterns_types"];
+
+    for (const auto &json_p : inspect_stat["found_patterns"]) {
+        std::string pattern = json_p;
+        patterns_types[pattern] = patterns_types.value(pattern, 0) + 1;
+    }
+
+    int insp_found = inspect_stat["found_patterns"].size();
+    _stat_json["pattern_stat"]["found_count"] =
+        _stat_json["pattern_stat"].value("found_count", 0) + insp_found;
 }
 
 void Server::makeFifos()

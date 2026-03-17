@@ -1,6 +1,7 @@
 add_executable(tests
     config_scanner_tests.cpp
     file_inspector_tests.cpp
+    server_tests.cpp
     socket_tests.cpp
     main.cpp
 )
@@ -16,6 +17,7 @@ target_link_libraries(tests PRIVATE
     file_inspector_lib
     socket_lib
     nlohmann_json::nlohmann_json
+    server_lib
 )
 
 target_compile_options(tests PRIVATE --coverage -O0 -g)

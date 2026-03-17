@@ -6,7 +6,11 @@
 #include <nlohmann/json.hpp>
 #include <atomic>
 
+class ServerTest;
+
 class Server {
+    friend class ServerTest;
+
     Socket _socket;
 
     json _stat_json;
@@ -28,14 +32,16 @@ public:
 
     void run(const std::atomic<bool>& running);
 
+    void updateStats(const json &inspect_stat);
 
 private: 
     void initJson();
     void makeFifos();
     void handleClient(Socket &client_socket);
     void report(Socket &client_socket);
-    void sendStatsToParent(InspectResult &insp_res);
+    void sendStatsToParent(InspectResult &insp_res, int fifo_fd);
 
     void readChildrenStat(int reqs_fifo_fd);
     void sendStatToUtil(int reqs_fifo_fd);
+
 };

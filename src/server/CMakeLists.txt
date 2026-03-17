@@ -22,14 +22,22 @@ target_include_directories(file_inspector_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_library(server_lib STATIC
+    server.hpp
+    server.cpp
+)
+target_link_libraries(server_lib PUBLIC
+    socket_lib
+    file_inspector_lib
+)
+target_include_directories(server_lib PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 
 add_executable(server 
-    server.hpp
-    server.cpp
     main.cpp
 )
 target_link_libraries(server PUBLIC
-    socket_lib
-    file_inspector_lib
+    server_lib
 )
