@@ -40,7 +40,8 @@ protected:
 
 // happy tests
 
-TEST_F(ConfigScannerTest, loadPatterns_valid_config) {
+TEST_F(ConfigScannerTest, loadPatterns_valid_config) 
+{
     std::string json_content = R"({ "patterns": ["*.log", "*.txt", "error_*"] })";
     fs::path config_path = createConfigFile("valid.json", json_content);
 
@@ -53,7 +54,8 @@ TEST_F(ConfigScannerTest, loadPatterns_valid_config) {
     EXPECT_EQ(patterns[2], "error_*");
 }
 
-TEST_F(ConfigScannerTest, loadPatterns_empty_patterns_array) {
+TEST_F(ConfigScannerTest, loadPatterns_empty_patterns_array) 
+{
     std::string json_content = R"({ "patterns": [] })";
     fs::path config_path = createConfigFile("empty_array.json", json_content);
 
@@ -63,8 +65,8 @@ TEST_F(ConfigScannerTest, loadPatterns_empty_patterns_array) {
     EXPECT_TRUE(patterns.empty());
 }
 
-TEST_F(ConfigScannerTest, getPatterns_init_state) {
-    
+TEST_F(ConfigScannerTest, getPatterns_init_state) 
+{    
     const auto& patterns = scanner.getPatterns();
 
     EXPECT_TRUE(patterns.empty());
@@ -73,7 +75,8 @@ TEST_F(ConfigScannerTest, getPatterns_init_state) {
 
 // filesystem tests 
 
-TEST_F(ConfigScannerTest, loadPatterns_file_not_found) {
+TEST_F(ConfigScannerTest, loadPatterns_file_not_found) 
+{
     fs::path non_existent_path = temp_dir / "not_exists.json";
 
     EXPECT_THROW(scanner.loadPatterns(non_existent_path), std::runtime_error);
@@ -82,7 +85,8 @@ TEST_F(ConfigScannerTest, loadPatterns_file_not_found) {
     EXPECT_TRUE(patterns.empty());
 }
 
-TEST_F(ConfigScannerTest, loadPatterns_path_is_directory) {
+TEST_F(ConfigScannerTest, loadPatterns_path_is_directory) 
+{
     fs::path dir_path = temp_dir; 
 
     EXPECT_THROW(scanner.loadPatterns(dir_path), std::runtime_error);
@@ -91,7 +95,8 @@ TEST_F(ConfigScannerTest, loadPatterns_path_is_directory) {
     EXPECT_TRUE(patterns.empty());
 }
 
-TEST_F(ConfigScannerTest, loadPatterns_invalid_json_syntax) {
+TEST_F(ConfigScannerTest, loadPatterns_invalid_json_syntax) 
+{
     std::string json_content = "{ bad json }";
     fs::path config_path = createConfigFile("invalid.json", json_content);
 
@@ -101,7 +106,8 @@ TEST_F(ConfigScannerTest, loadPatterns_invalid_json_syntax) {
 
 // validate tests
 
-TEST_F(ConfigScannerTest, loadPatterns_missing_patterns_key_in_json) {
+TEST_F(ConfigScannerTest, loadPatterns_missing_patterns_key_in_json) 
+{
     std::string json_content = R"({ "other_key": "value" })";
     fs::path config_path = createConfigFile("missing_key.json", json_content);
 
@@ -111,7 +117,8 @@ TEST_F(ConfigScannerTest, loadPatterns_missing_patterns_key_in_json) {
     EXPECT_TRUE(patterns.empty());
 }
 
-TEST_F(ConfigScannerTest, loadPatterns_patterns_not_array) {
+TEST_F(ConfigScannerTest, loadPatterns_patterns_not_array) 
+{
     std::string json_content = R"({ "patterns": "not_an_array" })";
     fs::path config_path = createConfigFile("not_array.json", json_content);
 
@@ -121,7 +128,8 @@ TEST_F(ConfigScannerTest, loadPatterns_patterns_not_array) {
     EXPECT_TRUE(patterns.empty());
 }
 
-TEST_F(ConfigScannerTest, loadPatterns_patterns_contains_not_string) {
+TEST_F(ConfigScannerTest, loadPatterns_patterns_contains_not_string) 
+{
     std::string json_content = R"({ "patterns": ["valid", 123, "another"] })";
     fs::path config_path = createConfigFile("mixed_types.json", json_content);
 
@@ -131,7 +139,8 @@ TEST_F(ConfigScannerTest, loadPatterns_patterns_contains_not_string) {
     EXPECT_TRUE(patterns.empty());
 }
 
-TEST_F(ConfigScannerTest, loadPatterns_null_value) {
+TEST_F(ConfigScannerTest, loadPatterns_null_value) 
+{
     std::string json_content = "null";
     fs::path config_path = createConfigFile("null.json", json_content);
 
@@ -148,7 +157,8 @@ class InvalidItemTypesTest : public ConfigScannerTest,
 {
 };
 
-TEST_P(InvalidItemTypesTest, loadPatterns_invalid_item_type_in_patterns) {
+TEST_P(InvalidItemTypesTest, loadPatterns_invalid_item_type_in_patterns) 
+{
     std::string json_content = R"({ "patterns": [)" + GetParam() + R"(] })";
     fs::path config_path = createConfigFile("invalid.json", json_content);
 
@@ -158,13 +168,6 @@ TEST_P(InvalidItemTypesTest, loadPatterns_invalid_item_type_in_patterns) {
     EXPECT_TRUE(patterns.empty());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    VariousTypes,
-    InvalidItemTypesTest,
-    ::testing::Values(
-        "123", 
-        "true",
-        "null", 
-        "{}"
-    )
+INSTANTIATE_TEST_SUITE_P(VariousTypes, InvalidItemTypesTest,
+    ::testing::Values("123", "true", "null", "{}")
 );

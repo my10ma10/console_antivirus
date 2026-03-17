@@ -24,25 +24,3 @@ InspectResult FileInspector::inspect(const std::string &file_content)
     }
     return res;
 }
-
-
-// std::string FileInspector::readFile(
-//     const fs::path &filepath, 
-//     std::ios_base::openmode openmode)
-// {
-//     if (!fs::exists(filepath)) {
-//         std::cerr << "FileInspector: File not found\n";
-//         return "";
-//     }
-
-//     std::ifstream file(filepath, openmode);
-//     if (!file.is_open()) {
-//         std::cerr << "FileInspector: Cannot open file\n";
-//         return "";
-//     }
-    
-//     return std::string(
-//         std::istreambuf_iterator<char>(file),
-//         std::istreambuf_iterator<char>()
-//     );
-// }
