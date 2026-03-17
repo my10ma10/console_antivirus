@@ -135,7 +135,7 @@ TEST_F(SocketTest, send_empty_string)
     t.join();
 }
 
-TEST_F(SocketTest, send_large_data)
+TEST_F(SocketTest, send_good_large_data)
 {
     std::string large(BUF_SIZE, 'z');
 
@@ -152,6 +152,26 @@ TEST_F(SocketTest, send_large_data)
 
     t.join();
 }
+
+
+TEST_F(SocketTest, send_too_large_data)
+{
+    std::string large(BUF_SIZE * 2, 'x');
+
+    auto t = runServer([&large](Socket& accepted) {
+        auto msg = accepted.recv();
+
+        ASSERT_TRUE(msg.has_value());
+        EXPECT_NE(msg.value(), large);
+    });
+
+    connectClient();
+    client.send(large);
+    client.shutdownWrite();
+
+    t.join();
+}
+
 
 TEST_F(SocketRawTest, send_on_inactive_socket)
 {

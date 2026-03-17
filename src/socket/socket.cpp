@@ -194,7 +194,6 @@ void Socket::close()
 void Socket::shutdown()
 {
     if (::shutdown(_socket_fd, SHUT_RDWR) == -1) {
-
         if (errno != ENOTCONN) {
             std::perror("socket shutdown error");
         }
