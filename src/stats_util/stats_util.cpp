@@ -6,10 +6,6 @@
 
 StatsUtil::StatsUtil()
 {
-    // if (mkfifo(STATS_REQUEST_FIFO, 0644) == -1) {
-    //     std::perror("mkfifo error");
-    //     throw std::runtime_error("StatsUtil mkfifo error");
-    // }
     this->_response_fifo_fd = open(STATS_RESPONSE_FIFO, O_RDONLY | O_NONBLOCK);
     this->_request_fifo_fd = open(STATS_REQUEST_FIFO, O_WRONLY);
 
@@ -75,14 +71,6 @@ std::string StatsUtil::readResponse()
         perror("read error");
         throw std::runtime_error("StatsUtil read error");        
     }
-
-
-    // std::cout << "stat_buf size: " << stat_buf.size() << std::endl;
-    // for (char& ch : stat_buf) {
-    //     std::cout << ch;
-    // }
-    // std::cout << std::endl;
-
 
     std::string stat_str(stat_buf.data(), read_n);
     auto resp = json::parse(stat_str);

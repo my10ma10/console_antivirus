@@ -2,21 +2,21 @@
 
 #include "socket/socket.hpp"
 
-// #include <atomic>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
+class ClientTest;
+
 class Client {
+    friend class ClientTest;
+    
     Socket _socket;
 
-    // std::atomic<bool> _is_active{true};
-    
 public:
     Client() = default;
 
     void connect(const std::string &port, const std::string &ip_address);
-    // void stop();
 
     void sendFile(const fs::path &filepath);
     bool isVerified();
