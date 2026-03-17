@@ -117,3 +117,21 @@ TEST_F(ServerTest, readChildrenStat_malformed_json__does_not_crash) {
     EXPECT_NO_THROW(readChildrenStat(pipefd[0]));
     close(pipefd[0]);
 }
+
+TEST_F(ServerTest, readChildrenStat_valid_json__updates_stats) {
+    int pipefd[2];
+    ASSERT_EQ(pipe(pipefd), 0);
+
+    json payload = {{"found_patterns", {"sqli", "xss"}}};
+    std::string s = payload.dump();
+    write(pipefd[1], s.c_str(), s.size());
+    close(pipefd[1]);
+
+    readChildrenStat(pipefd[0]);
+    close(pipefd[0]);
+
+    EXPECT_EQ(statJson()["checked_files_count"], 1);
+    EXPECT_EQ(statJson()["pattern_stat"]["found_count"], 2);
+    EXPECT_EQ(statJson()["pattern_stat"]["patterns_types"]["sqli"], 1);
+    EXPECT_EQ(statJson()["pattern_stat"]["patterns_types"]["xss"], 1);
+}

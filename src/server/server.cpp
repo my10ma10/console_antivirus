@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <poll.h>
 
+#include <iostream>
+
 Server::Server()
 {
     initJson();
@@ -172,6 +174,7 @@ void Server::readChildrenStat(int req_fifo_fd)
     auto insp_result = json::parse(buf.data(), nullptr, false);
 
     if (insp_result.is_discarded()) {
+        std::cerr << "inspect result is empty\n";
         return;
     }
 
