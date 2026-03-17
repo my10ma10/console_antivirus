@@ -139,7 +139,6 @@ void Server::report(Socket &client_socket)
     
     client_socket.send(result.verified ? "1" : "0");
 
-
     int to_parent_fd = open(STATS_CHILDREN_FIFO, O_WRONLY);
     if (to_parent_fd == -1) {
         std::perror("open children stat fifo error");

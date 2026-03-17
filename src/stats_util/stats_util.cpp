@@ -4,6 +4,11 @@
 #include <sstream>
 #include <iostream>
 
+StatsUtil::StatsUtil(int req_fd, int resp_fd)
+    : _request_fifo_fd(req_fd), _response_fifo_fd(resp_fd) 
+{
+}
+
 StatsUtil::StatsUtil()
 {
     this->_response_fifo_fd = open(STATS_RESPONSE_FIFO, O_RDONLY | O_NONBLOCK);
@@ -71,6 +76,7 @@ std::string StatsUtil::readResponse()
         perror("read error");
         throw std::runtime_error("StatsUtil read error");        
     }
+
 
     std::string stat_str(stat_buf.data(), read_n);
     auto resp = json::parse(stat_str);

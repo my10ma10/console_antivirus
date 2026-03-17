@@ -11,20 +11,24 @@
 
 using json = nlohmann::json;
 
+class StatsUtilTest;
+
 class StatsUtil {
+    friend class StatsUtilTest;
+
     int _request_fifo_fd = -1;
     int _response_fifo_fd = -1;
+
 public:
+    StatsUtil(int req_fd, int resp_fd);
     StatsUtil();
     ~StatsUtil();
 
     StatsUtil(const StatsUtil &other) = delete;
     StatsUtil &operator=(const StatsUtil &other) = delete;
-
     
     StatsUtil(StatsUtil &&other);
     StatsUtil &operator=(StatsUtil &&other);
-
 
     void writeRequest();
     std::string readResponse();

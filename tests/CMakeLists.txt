@@ -4,6 +4,7 @@ add_library(unit_tests_lib OBJECT
     socket_tests.cpp
     server_tests.cpp
     client_tests.cpp
+    stats_util_tests.cpp
 )
 
 
@@ -19,6 +20,7 @@ target_link_libraries(unit_tests_lib PUBLIC
     socket_lib
     server_lib
     client_lib
+    stats_util_lib
 )
 
 target_compile_options(unit_tests_lib PRIVATE --coverage -O0 -g)

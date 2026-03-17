@@ -5,6 +5,9 @@
 #include <atomic>
 #include <chrono>
 
+#include <sys/types.h>
+#include <fcntl.h>
+
 #include "server/server.hpp"
 #include "client/client.hpp"
 
@@ -12,7 +15,7 @@ namespace fs = std::filesystem;
 
 static const std::string TEST_PORT = "19999";
 
-class IntegrationTest : public ::testing::Test {
+class ServerClientIntegrationTest : public ::testing::Test {
 protected:
     std::atomic<bool> running{true};
     std::thread server_thread;
@@ -48,25 +51,26 @@ protected:
         stopServer();
         fs::remove(tmp_file);
     }
+
 };
 
 // connect 
 
-TEST_F(IntegrationTest, Server_connect__binds_successfully) {
+TEST_F(ServerClientIntegrationTest, Server_connect__binds_successfully) {
     EXPECT_NO_THROW({
         Server server;
         server.connect(TEST_PORT);
     });
 }
 
-TEST_F(IntegrationTest, Client_connect__connects_to_running_server) {
+TEST_F(ServerClientIntegrationTest, Client_connect__connects_to_running_server) {
     startServer();
 
     Client client;
     EXPECT_NO_THROW(client.connect(TEST_PORT, "127.0.0.1"));
 }
 
-TEST_F(IntegrationTest, Client_connect__throws_if_no_server) {
+TEST_F(ServerClientIntegrationTest, Client_connect__throws_if_no_server) {
     // сервер не запущен
     Client client;
     EXPECT_THROW(client.connect(TEST_PORT, "127.0.0.1"), std::runtime_error);
@@ -74,7 +78,7 @@ TEST_F(IntegrationTest, Client_connect__throws_if_no_server) {
 
 // sendFile + isVerified (clean file)
 
-TEST_F(IntegrationTest, Client_sendFile_clean_file__server_verifies) {
+TEST_F(ServerClientIntegrationTest, Client_sendFile_clean_file__server_verifies) {
     startServer(config_path);
 
     createFile("hello world\nno malicious content here\n");
@@ -89,7 +93,7 @@ TEST_F(IntegrationTest, Client_sendFile_clean_file__server_verifies) {
 
 // bad tests: sendFile + isVerified 
 
-TEST_F(IntegrationTest, Client_sendFile_malicious_file__server_rejects) {
+TEST_F(ServerClientIntegrationTest, Client_sendFile_malicious_file__server_rejects) {
     startServer(config_path);
 
     createFile("SELECT * FROM users WHERE id = 1 OR 1=1;\n");
@@ -102,22 +106,18 @@ TEST_F(IntegrationTest, Client_sendFile_malicious_file__server_rejects) {
     EXPECT_FALSE(result);
 }
 
-// --- sendFile с несуществующим файлом — клиент не падает ---
-
-TEST_F(IntegrationTest, Client_sendFile_nonexistent_file__does_not_throw) {
+TEST_F(ServerClientIntegrationTest, Client_sendFile_nonexistent_file__does_not_throw) {
     startServer(config_path);
 
     Client client;
     client.connect(TEST_PORT, "127.0.0.1");
 
-    // sendFile тихо возвращается, но сокет не закрывается корректно —
-    // сервер может зависнуть на recv, поэтому тест только на отсутствие краша
     EXPECT_NO_THROW(client.sendFile("/nonexistent/path.txt"));
 }
 
-// --- несколько клиентов подряд ---
+// несколько клиентов подряд 
 
-TEST_F(IntegrationTest, Server_handles_multiple_sequential_clients) {
+TEST_F(ServerClientIntegrationTest, Server_handles_multiple_sequential_clients) {
     startServer(config_path);
     createFile("clean content\n");
 
@@ -127,4 +127,26 @@ TEST_F(IntegrationTest, Server_handles_multiple_sequential_clients) {
         client.sendFile(tmp_file);
         EXPECT_NO_THROW(client.isVerified());
     }
+}
+TEST_F(ServerClientIntegrationTest, Server_report_good_file__sends_verified_true) {
+    startServer(config_path);
+    createFile("clean content\n");
+
+    Client client;
+    client.connect(TEST_PORT, "127.0.0.1");
+    client.sendFile(tmp_file);
+
+    EXPECT_TRUE(client.isVerified());
+}
+
+
+TEST_F(ServerClientIntegrationTest, Server_report_bad_file__sends_verified_false) {
+    startServer(config_path);
+    createFile("SELECT * FROM users WHERE 1=1;\n");
+
+    Client client;
+    client.connect(TEST_PORT, "127.0.0.1");
+    client.sendFile(tmp_file);
+
+    EXPECT_FALSE(client.isVerified());
 }
